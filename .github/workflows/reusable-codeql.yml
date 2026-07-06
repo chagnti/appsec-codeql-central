@@ -32,6 +32,11 @@ on:
         required: false
         type: boolean
         default: true
+      query-profile:
+        description: "Query profile: standard | strict | pci | internal"
+        required: false
+        type: string
+        default: "standard"
 
     secrets:
       APPSEC_TOKEN:
@@ -60,6 +65,23 @@ jobs:
           restore-keys: |
             codeql-db-${{ inputs.language }}-${{ github.repository }}-${{ github.ref_name }}-
             codeql-db-${{ inputs.language }}-${{ github.repository }}-
+
+      # Resolve which shared config to use based on query-profile input
+      # This lets AppSec control which queries run on which repo types
+      # without touching individual app repos
+      - name: Resolve query profile
+        run: |
+          PROFILE="${{ inputs.query-profile }}"
+          BASE="https://raw.githubusercontent.com/chagnti/appsec-codeql-central/main/configs"
+          case "$PROFILE" in
+            strict)  CONFIG_URL="$BASE/java-strict.yml" ;;
+            pci)     CONFIG_URL="$BASE/java-payments.yml" ;;
+            internal) CONFIG_URL="$BASE/java-internal-tools.yml" ;;
+            *)       CONFIG_URL="$BASE/java-servlet.yml" ;;
+          esac
+          echo "Using config: $CONFIG_URL"
+          curl -sSL "$CONFIG_URL" -o .github/codeql/shared-config.yml
+          echo "SHARED_CONFIG=.github/codeql/shared-config.yml" >> $GITHUB_ENV
 
       # Download and run suppression validator BEFORE scan starts
       # If any unapproved codeql[] comment exists in code → job fails here
