@@ -87,13 +87,29 @@ jobs:
           # Output SARIF file for artifact upload
           output: sarif-results
 
+      # Download the FP filter script from the central repo
+      # This runs AFTER analyze produces the SARIF but BEFORE we upload
+      - name: Download FP filter script
+        run: |
+          curl -sSL \
+            https://raw.githubusercontent.com/chagnti/appsec-codeql-central/main/scripts/filter-sarif.py \
+            -o filter-sarif.py
+
+      # Run the FP filter — reads sarif-results/*.sarif, writes filtered versions
+      - name: Filter false positives from SARIF
+        run: |
+          python3 filter-sarif.py \
+            --input sarif-results/${{ inputs.language }}.sarif \
+            --output sarif-results/${{ inputs.language }}-filtered.sarif \
+            --min-severity warning
+
       # Upload SARIF as artifact so central dashboard can pull it
       - name: Upload SARIF artifact
         if: inputs.upload-artifact == true
         uses: actions/upload-artifact@v4
         with:
           name: sarif-${{ inputs.language }}-${{ github.repository_owner }}-${{ github.event.repository.name }}
-          path: sarif-results/
+          path: sarif-results/*-filtered.sarif   # upload only the filtered version
           retention-days: 30
 
       # Post summary to job output for easy reading in Actions UI
