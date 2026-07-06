@@ -29,6 +29,14 @@ predicate containsGetParameter(Expr e) {
   containsGetParameter(e.(AddExpr).getLeftOperand())
   or
   containsGetParameter(e.(AddExpr).getRightOperand())
+  or
+  // catch multi-step: q = "SELECT"; q += user; executeQuery(q)
+  // prevents devs splitting concatenation across lines to dodge detection
+  exists(Variable v, AssignExpr assign |
+    assign.getDest() = v.getAnAccess() and
+    containsGetParameter(assign.getRhs()) and
+    e = v.getAnAccess()
+  )
 }
 
 from ExecuteQueryCall exec

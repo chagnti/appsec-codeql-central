@@ -1,0 +1,43 @@
+name: Suppression SLA Monitor
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'   # every Monday 9am — weekly AppSec review reminder
+
+jobs:
+  check-sla:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check pending requests and expiring suppressions
+        run: |
+          pip install pyyaml -q
+          python3 - <<'EOF'
+          import yaml, datetime, sys
+          from pathlib import Path
+
+          registry = yaml.safe_load(Path("suppressions/approved-suppressions.yml").read_text())
+          suppressions = registry.get("suppressions") or []
+          today = datetime.date.today()
+          warn_window = today + datetime.timedelta(days=30)
+
+          expiring = []
+          for s in suppressions:
+              expires = s.get("expires")
+              if expires:
+                  exp_date = datetime.date.fromisoformat(str(expires))
+                  if exp_date <= warn_window:
+                      expiring.append(s)
+
+          # Write to GitHub step summary
+          with open(os.environ.get("GITHUB_STEP_SUMMARY", "/dev/stdout"), "a") as f:
+              f.write("## Weekly Suppression SLA Report\n\n")
+              if expiring:
+                  f.write(f"### {len(expiring)} suppression(s) expiring within 30 days\n\n")
+                  for s in expiring:
+                      f.write(f"- **{s['id']}** — {s['rule']} in `{s['file']}` expires {s['expires']}\n")
+                  f.write("\nAction required: re-review or remove from codebase.\n")
+              else:
+                  f.write("All suppressions current. No action needed.\n")
+          EOF

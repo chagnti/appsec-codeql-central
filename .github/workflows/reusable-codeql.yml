@@ -64,13 +64,19 @@ jobs:
       # Download and run suppression validator BEFORE scan starts
       # If any unapproved codeql[] comment exists in code → job fails here
       # Developer must go through AppSec approval process first
+      # Pinned to a specific commit SHA — not @main
+      # If central repo is compromised, attackers cannot push a new
+      # script that auto-approves all suppressions. SHA must be
+      # manually updated by AppSec after reviewing each change.
       - name: Download suppression validator
+        env:
+          CENTRAL_SHA: "11a7233"   # update this after each central repo change
         run: |
           curl -sSL \
-            https://raw.githubusercontent.com/chagnti/appsec-codeql-central/main/scripts/validate-suppressions.py \
+            https://raw.githubusercontent.com/chagnti/appsec-codeql-central/${CENTRAL_SHA}/scripts/validate-suppressions.py \
             -o validate-suppressions.py
           curl -sSL \
-            https://raw.githubusercontent.com/chagnti/appsec-codeql-central/main/suppressions/approved-suppressions.yml \
+            https://raw.githubusercontent.com/chagnti/appsec-codeql-central/${CENTRAL_SHA}/suppressions/approved-suppressions.yml \
             -o approved-suppressions.yml
 
       - name: Validate inline suppressions against AppSec registry

@@ -127,6 +127,28 @@ def validate(source_root, registry_path, repo):
         print()
 
     # Exit codes
+    # Detect orphaned registry entries — approved but comment no longer in code
+    # This happens when code is refactored/deleted after suppression was approved
+    # Orphans indicate the registry is stale and needs cleanup
+    orphaned = []
+    for entry in registry:
+        if entry.get("repo") != repo:
+            continue
+        found_match = any(
+            f["rule"] == entry.get("rule") and f["file"] == entry.get("file")
+            for f in suppressions_in_code
+        )
+        if not found_match:
+            orphaned.append(entry)
+
+    if orphaned:
+        print("  [ORPHANED REGISTRY ENTRIES — AppSec action needed]")
+        for e in orphaned:
+            print(f"  {e.get('id')} — {e.get('rule')} @ {e.get('file')}")
+            print(f"  Comment no longer exists in code — file may have been renamed or deleted.")
+            print(f"  Remove this entry from approved-suppressions.yml")
+            print()
+
     if unapproved or expired:
         print("=" * 60)
         print(f"SCAN BLOCKED: {len(unapproved)} unapproved + {len(expired)} expired suppression(s).")
@@ -136,6 +158,8 @@ def validate(source_root, registry_path, repo):
         return False
 
     print(f"All {len(approved)} suppression(s) are approved and current.")
+    if orphaned:
+        print(f"WARNING: {len(orphaned)} orphaned registry entries need cleanup.")
     return True
 
 if __name__ == "__main__":
