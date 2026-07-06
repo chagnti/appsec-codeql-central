@@ -1,0 +1,15 @@
+name: "AppSec — Java Servlet/Struts config"
+
+queries:
+  - uses: security-extended
+  - uses: queries/java/SqlInjectionCustom.ql
+  - uses: queries/java/HardcodedSecrets.ql
+
+# Paths excluded from ALL servlet/Struts apps
+paths-ignore:
+  - "src/test/**"
+  - "src/main/webapp/WEB-INF/**"
+  - "**/target/**"
+  - "**/*.min.js"
+  - "**/node_modules/**"
+  - "**/generated-sources/**"

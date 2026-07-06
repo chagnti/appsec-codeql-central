@@ -1,0 +1,4 @@
+name: appsec/java-custom-queries
+version: 1.0.0
+dependencies:
+  codeql/java-all: "*"

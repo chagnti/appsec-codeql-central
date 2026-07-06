@@ -1,0 +1,16 @@
+name: "AppSec — Java Spring config"
+
+queries:
+  - uses: security-extended
+  - uses: queries/java/SqlInjectionCustom.ql
+  - uses: queries/java/HardcodedSecrets.ql
+
+paths-ignore:
+  - "src/test/**"
+  - "src/it/**"                        # integration tests
+  - "**/target/**"
+  - "**/generated/**"
+  - "**/*.min.js"
+  - "**/node_modules/**"
+  - "**/generated-sources/**"
+  - "src/main/resources/static/**"     # static assets
