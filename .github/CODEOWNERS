@@ -1,0 +1,14 @@
+# AppSec team owns everything in this repo
+# No PR can be merged without AppSec approval
+* @chagnti
+
+# Suppression registry requires explicit AppSec review
+# Even if AppSec team member opens the PR, a second AppSec
+# member must approve — enforces four-eyes principle
+/suppressions/approved-suppressions.yml @chagnti
+
+# Reusable workflow — AppSec controls the scan logic
+/.github/workflows/ @chagnti
+
+# Query files — AppSec controls what gets detected
+/queries/ @chagnti

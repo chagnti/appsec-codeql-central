@@ -61,6 +61,26 @@ jobs:
             codeql-db-${{ inputs.language }}-${{ github.repository }}-${{ github.ref_name }}-
             codeql-db-${{ inputs.language }}-${{ github.repository }}-
 
+      # Download and run suppression validator BEFORE scan starts
+      # If any unapproved codeql[] comment exists in code → job fails here
+      # Developer must go through AppSec approval process first
+      - name: Download suppression validator
+        run: |
+          curl -sSL \
+            https://raw.githubusercontent.com/chagnti/appsec-codeql-central/main/scripts/validate-suppressions.py \
+            -o validate-suppressions.py
+          curl -sSL \
+            https://raw.githubusercontent.com/chagnti/appsec-codeql-central/main/suppressions/approved-suppressions.yml \
+            -o approved-suppressions.yml
+
+      - name: Validate inline suppressions against AppSec registry
+        run: |
+          pip install pyyaml -q
+          python3 validate-suppressions.py \
+            --source-root . \
+            --registry approved-suppressions.yml \
+            --repo ${{ github.repository }}
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:

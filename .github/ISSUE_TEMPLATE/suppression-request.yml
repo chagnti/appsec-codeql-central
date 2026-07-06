@@ -1,0 +1,82 @@
+name: CodeQL Suppression Request
+description: Request AppSec to approve a false positive suppression
+title: "[SUPPRESS] <rule-id> in <repo>/<file>"
+labels: ["suppression-request", "needs-appsec-review"]
+assignees:
+  - chagnti
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## How this works
+        1. Fill out this form completely
+        2. AppSec will review the finding in your code
+        3. If approved, AppSec adds it to the registry and merges
+        4. You then add the inline comment to your code referencing the SUP-ID
+        5. **Do NOT add the inline comment before AppSec approves — scan will fail**
+
+  - type: input
+    id: rule
+    attributes:
+      label: CodeQL rule ID
+      description: Exact rule ID from the finding e.g. java/custom-sql-injection
+      placeholder: java/sql-injection
+    validations:
+      required: true
+
+  - type: input
+    id: repo
+    attributes:
+      label: Repository
+      placeholder: chagnti/dvja
+    validations:
+      required: true
+
+  - type: input
+    id: file
+    attributes:
+      label: File path and line number
+      placeholder: src/main/java/com/example/Login.java:47
+    validations:
+      required: true
+
+  - type: textarea
+    id: finding
+    attributes:
+      label: Paste the CodeQL finding message
+      description: Copy the exact finding text from the Security tab
+    validations:
+      required: true
+
+  - type: textarea
+    id: reason
+    attributes:
+      label: Why is this a false positive?
+      description: |
+        Be specific. Explain exactly why the flagged code is safe.
+        "It is safe" is not acceptable. Include:
+        - What data flows into the flagged location
+        - Why that data cannot be attacker-controlled
+        - What alternative protection is in place
+    validations:
+      required: true
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Suppression type
+      options:
+        - False positive — code is not actually vulnerable
+        - Risk accepted — code is vulnerable but risk accepted by security owner
+    validations:
+      required: true
+
+  - type: input
+    id: ticket
+    attributes:
+      label: Ticket reference
+      description: Jira/Linear ticket tracking this
+      placeholder: APPSEC-142
+    validations:
+      required: true

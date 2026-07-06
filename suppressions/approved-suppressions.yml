@@ -1,0 +1,33 @@
+# ============================================================
+# AppSec Approved Suppression Registry
+# ============================================================
+# WHO CAN EDIT: AppSec team only (enforced via CODEOWNERS)
+# HOW TO REQUEST: Open a PR using the suppression-request template
+# PROCESS: Dev opens PR → AppSec reviews code → AppSec merges
+#
+# Each entry maps to one inline comment in application code.
+# Format of inline comment in code:
+#   // codeql[rule-id] -- SUP-XXX: brief reason
+#
+# If a codeql[] comment exists in code but has NO matching
+# entry here → the scan FAILS and blocks the PR.
+# ============================================================
+
+suppressions: []
+
+# Example of an approved suppression (uncomment to use):
+#
+# - id: SUP-001
+#   rule: java/custom-sql-injection
+#   repo: chagnti/dvja
+#   file: src/main/java/com/appsecco/dvja/actions/Login.java
+#   line: 47
+#   reason: >
+#     ORM layer uses PreparedStatement internally. The string
+#     concatenation is on a non-user-controlled config value
+#     loaded from application.properties at startup.
+#   risk_accepted: false        # true = known vuln accepted, false = confirmed FP
+#   approved_by: raj.chaganti
+#   approved_date: "2026-07-05"
+#   expires: "2027-07-05"       # mandatory expiry — forces annual re-review
+#   ticket: "APPSEC-142"        # link to your ticketing system
